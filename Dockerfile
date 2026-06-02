@@ -25,8 +25,9 @@ Suites: resolute-pgdg
 Architectures: amd64
 Components: main
 Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
-EOF \
- && apt-get update \
+EOF
+
+RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
