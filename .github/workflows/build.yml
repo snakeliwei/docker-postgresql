@@ -13,6 +13,10 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push-docker-image:
     name: Build and Push Docker Image
