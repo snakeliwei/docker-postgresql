@@ -4,24 +4,16 @@ on:
   push:
     branches:
       - master
-    tags:
-      - '*'
-  pull_request:
-    branches:
-      - master
-  workflow_dispatch:
-    branches:
-      - master
-
-permissions:
-  contents: read
-  packages: write
 
 jobs:
   build-and-push-docker-image:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,8 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository_owner }}/docker-postgresql
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -40,7 +31,6 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set up Docker Buildx
-        id: buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Github Packages
@@ -51,8 +41,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build image and push to container registries
-        id: build
+      - name: Build and Push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -61,6 +50,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Image digest
-        run: echo "${{ steps.build.outputs.digest }}"
