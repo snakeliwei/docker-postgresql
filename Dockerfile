@@ -1,9 +1,3 @@
-FROM ubuntu:resolute AS add-apt-repositories
-
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg postgresql-common \
- && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-
 FROM ubuntu:resolute
 
 LABEL maintainer="well@nightingales.cn"
@@ -19,12 +13,21 @@ ENV PG_APP_HOME="/etc/docker-postgresql" \
 ENV PG_BINDIR=/usr/lib/postgresql/${PG_VERSION}/bin \
     PG_DATADIR=${PG_HOME}/${PG_VERSION}/main
 
-COPY --from=add-apt-repositories /etc/apt/trusted.gpg /etc/apt/trusted.gpg
-
-COPY --from=add-apt-repositories /etc/apt/sources.list /etc/apt/sources.list
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y acl sudo locales \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y curl ca-certificates acl sudo locales \
+ && install -d /usr/share/postgresql-common/pgdg \
+ && curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+ && cat << EOF > /etc/apt/sources.list.d/pgdg.sources
+Types: deb deb-src 
+URIs: https://apt.postgresql.org/pub/repos/apt
+Suites: resolute-pgdg
+Architectures: amd64
+Components: main
+Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+EOF \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
