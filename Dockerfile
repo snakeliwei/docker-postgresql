@@ -1,9 +1,8 @@
 FROM ubuntu:resolute AS add-apt-repositories
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg \
- && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
- && echo 'deb http://apt.postgresql.org/pub/repos/apt/ resolute-pgdg main' >> /etc/apt/sources.list
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg postgresql-common \
+ && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 
 FROM ubuntu:resolute
 
